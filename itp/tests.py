@@ -542,10 +542,30 @@ class TWPTests(unittest.TestCase):
         self.assertEqual(result.html, 'text <a href="https://instagram.com/username">@username</a>')
         self.assertEqual(result.users, ['username'])
 
-    def test_username_dots(self):
+    def test_username_with_dots(self):
         result = self.parser.parse('text @user.name')
         self.assertEqual(result.html, 'text <a href="https://instagram.com/user.name">@user.name</a>')
         self.assertEqual(result.users, ['user.name'])
+
+    def test_username_ending_with_dots(self):
+        result = self.parser.parse('text @username.')
+        self.assertEqual(result.html, 'text <a href="https://instagram.com/username">@username</a>.')
+        self.assertEqual(result.users, ['username'])
+
+    def test_username_starting_with_dots(self):
+        result = self.parser.parse('text @.username')
+        self.assertEqual(result.html, 'text @.username')
+        self.assertEqual(result.users, [])
+
+    def test_username_with_repeated_dots(self):
+        result = self.parser.parse('text @user..name')
+        self.assertEqual(result.html, 'text <a href="https://instagram.com/user">@user</a>..name')
+        self.assertEqual(result.users, ['user'])
+
+    def test_usernames_with_only_one_character(self):
+        result = self.parser.parse('text @a')
+        self.assertEqual(result.html, 'text <a href="https://instagram.com/a">@a</a>')
+        self.assertEqual(result.users, ['a'])
 
     # Replies
     def test_username_reply_simple(self):

@@ -26,24 +26,25 @@ try:
 except ImportError:
     from urllib import quote
 
-__version__ = "2.0.0.0"
+__version__ = "2.0.1"
 
 AT_SIGNS = r'[@\uff20]'
 UTF_CHARS = r'a-z0-9_\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff'
 SPACES = r'[\u0020\u00A0\u1680\u180E\u2002-\u202F\u205F\u2060\u3000]'
 
-# Lists
-LIST_PRE_CHARS = r'([^a-z0-9_.]|^)'
-LIST_END_CHARS = r'([a-z0-9_.]{1,30})(/[a-z][a-z0-9\x80-\xFF-]{0,79})?'
-LIST_REGEX = re.compile(
-    LIST_PRE_CHARS + '(' + AT_SIGNS + '+)' + LIST_END_CHARS, re.IGNORECASE)
 
 # Users
 if sys.version_info >= (3, 0):
     username_flags = re.ASCII | re.IGNORECASE
 else:
     username_flags = re.IGNORECASE
-USERNAME_REGEX = re.compile(r'\B' + AT_SIGNS + LIST_END_CHARS, username_flags)
+
+# The username regex will match invalid usernames that start on dots, end on
+# dots and include repeated dots. Those usernames are parsed without regex
+# in the actual parser in `Parser._parse_username()`
+USERNAME_CHARS = r'([a-z0-9_.]{1,30})(/[a-z][a-z0-9\x80-\xFF-]{0,79})?'
+
+USERNAME_REGEX = re.compile(r'\B' + AT_SIGNS + USERNAME_CHARS, username_flags)
 REPLY_REGEX = re.compile(r'^(?:' + SPACES + r')*' + AT_SIGNS
                          + r'([a-z0-9_]{1,20}).*', re.IGNORECASE)
 
@@ -186,6 +187,28 @@ class Parser(object):
             return '%s%s' % (pre, self.format_url(
                 full_url, self._shorten_url(escape(url))))
 
+    def _parse_username(self, string):
+        '''Parse individual username'''
+        extra = ''
+
+        # If user name starts with a dot, it's invalid
+        if string[0] == '.':
+            return None, None
+
+        # Strip dots from the end
+        stripped = string.rstrip('.')
+        if len(stripped) is not len(string):
+            extra += string[len(stripped):]
+            string = stripped
+
+        # Cut off username if it has repeated dots, `foo..bar` becoming `foo`
+        index = string.find('..')
+        if index > 0:
+            extra += string[index:]
+            string = string[:index]
+
+        return string, extra
+
     def _parse_users(self, match):
         '''Parse usernames.'''
 
@@ -194,13 +217,21 @@ class Parser(object):
             return match.group(0)
 
         mat = match.group(0)
+
+        parsed_username, extra = self._parse_username(mat[1:])
+
+        if not parsed_username:
+            if self._html:
+                return mat
+            return
+
         if self._include_spans:
-            self._users.append((mat[1:], match.span(0)))
+            self._users.append((parsed_username, match.span(0)))
         else:
-            self._users.append(mat[1:])
+            self._users.append(parsed_username)
 
         if self._html:
-            return self.format_username(mat[0:1], mat[1:])
+            return self.format_username(mat[0:1], parsed_username) + extra
 
     def _parse_tags(self, match):
         '''Parse hashtags.'''

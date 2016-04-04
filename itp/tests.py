@@ -456,15 +456,19 @@ class TWPTests(unittest.TestCase):
         ))
         self.assertEqual(result.tags, ['hashtag1', 'hashtag2'])
 
-    def test_not_hashtag_number(self):
+    def test_hashtag_only_number(self):
         result = self.parser.parse('text #1234')
-        self.assertEqual(result.html, 'text #1234')
-        self.assertEqual(result.tags, [])
+        self.assertEqual(result.html, 'text <a href="https://instagram.com/explore/tags/1234/">#1234</a>')
+        self.assertEqual(result.tags, ['1234'])
 
-    def test_not_hashtag_text(self):
-        result = self.parser.parse('text#hashtag')
-        self.assertEqual(result.html, 'text#hashtag')
-        self.assertEqual(result.tags, [])
+    def test_hashtags_with_no_spaces_between(self):
+        result = self.parser.parse('test#hashtag1#hashtag2#hashtag3')
+        self.assertEqual(result.html, (
+            'text<a href="https://instagram.com/explore/tags/hashtag1/">#hashtag1</a>'
+            '<a href="https://instagram.com/explore/tags/hashtag2/">#hashtag2</a>'
+            '<a href="https://instagram.com/explore/tags/hashtag2/">#hashtag2</a>'
+        ))
+        self.assertEqual(result.tags, ['hashtag1', 'hashtag2', 'hashtag3'])
 
     def test_hashtag_umlaut(self):
         result = self.parser.parse('text #hash_tagüäö')

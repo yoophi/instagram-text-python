@@ -1,7 +1,7 @@
 instagram-text-python
 ===================
 
-**instagram-text-python** is a Tweet parser and formatter for Python. Extract
+**instagram-text-python** is a caption parser and formatter for Python. Extract
 users, hashtags, URLs and format as HTML for display.
 
 PyPI release: [https://pypi.python.org/pypi/instagram-text-python/](http://pypi.python.org/pypi/instagram-text-python/)

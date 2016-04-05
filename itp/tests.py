@@ -465,6 +465,13 @@ class TWPTests(unittest.TestCase):
         ))
         self.assertEqual(result.tags, ['hashtag1', 'hashtag2', 'hashtag3'])
 
+    def test_empty_hashtags(self):
+        result = self.parser.parse('text#####hashtag')
+        self.assertEqual(result.html, (
+            'text####<a href="https://instagram.com/explore/tags/hashtag/">#hashtag</a>'
+        ))
+        self.assertEqual(result.tags, ['hashtag'])
+
     def test_hashtag_umlaut(self):
         result = self.parser.parse('text #hash_tagüäö')
         self.assertEqual(

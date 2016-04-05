@@ -49,7 +49,7 @@ REPLY_REGEX = re.compile(r'^(?:' + SPACES + r')*' + AT_SIGNS
                          + r'([a-z0-9_]{1,20}).*', re.IGNORECASE)
 
 # Hashtags
-HASHTAG_EXP = r'(#|\uff03)([0-9A-Z_]*[%s]*)' % UTF_CHARS
+HASHTAG_EXP = r'(#|\uff03)([0-9A-Z_]+[%s]*)' % UTF_CHARS
 HASHTAG_REGEX = re.compile(HASHTAG_EXP, re.IGNORECASE)
 
 # URLs

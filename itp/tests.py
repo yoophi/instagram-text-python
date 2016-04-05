@@ -34,7 +34,7 @@ class TWPTests(unittest.TestCase):
         """Confirm that # in a URL works along with ,"""
         result = self.parser.parse('big url: http://blah.com:8080/path/to/here?p=1&q=abc,def#posn2 #ahashtag')
         self.assertEqual(result.urls, ['http://blah.com:8080/path/to/here?p=1&q=abc,def#posn2'])
-        self.assertEqual(result.tags, ['ahashtag'])
+        self.assertEqual(result.tags, ['posn2', 'ahashtag'])
 
     def test_all_not_allow_amp_without_question(self):
         result = self.parser.parse('Check out: http://www.github.com/test&@username')
@@ -423,11 +423,6 @@ class TWPTests(unittest.TestCase):
         self.assertEqual(result.html, 'text <a href="https://instagram.com/explore/tags/1tag/">#1tag</a>')
         self.assertEqual(result.tags, ['1tag'])
 
-    def test_not_hashtag_escape(self):
-        result = self.parser.parse('&#nbsp;')
-        self.assertEqual(result.html, '&#nbsp;')
-        self.assertEqual(result.tags, [])
-
     def test_hashtag_japanese(self):
         result = self.parser.parse('text #hashtagの')
         self.assertEqual(result.html, 'text <a href="https://instagram.com/explore/tags/hashtag/">#hashtag</a>の')
@@ -462,11 +457,11 @@ class TWPTests(unittest.TestCase):
         self.assertEqual(result.tags, ['1234'])
 
     def test_hashtags_with_no_spaces_between(self):
-        result = self.parser.parse('test#hashtag1#hashtag2#hashtag3')
+        result = self.parser.parse('text#hashtag1#hashtag2#hashtag3')
         self.assertEqual(result.html, (
             'text<a href="https://instagram.com/explore/tags/hashtag1/">#hashtag1</a>'
             '<a href="https://instagram.com/explore/tags/hashtag2/">#hashtag2</a>'
-            '<a href="https://instagram.com/explore/tags/hashtag2/">#hashtag2</a>'
+            '<a href="https://instagram.com/explore/tags/hashtag3/">#hashtag3</a>'
         ))
         self.assertEqual(result.tags, ['hashtag1', 'hashtag2', 'hashtag3'])
 

@@ -21,12 +21,13 @@ from __future__ import unicode_literals
 
 import re
 import sys
+import emoji
 try:
     from urllib.parse import quote  # Python3
 except ImportError:
     from urllib import quote
 
-__version__ = "2.0.1"
+__version__ = "2.0.4"
 
 AT_SIGNS = r'[@\uff20]'
 UTF_CHARS = r'a-z0-9_\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff'
@@ -47,6 +48,7 @@ USERNAME_CHARS = r'([a-z0-9_.]{1,30})(/[a-z][a-z0-9\x80-\xFF-]{0,79})?'
 USERNAME_REGEX = re.compile(r'\B' + AT_SIGNS + USERNAME_CHARS, username_flags)
 REPLY_REGEX = re.compile(r'^(?:' + SPACES + r')*' + AT_SIGNS
                          + r'([a-z0-9_]{1,20}).*', re.IGNORECASE)
+EMOJI_REGEX = emoji.get_emoji_regexp()
 
 # Hashtags
 HASHTAG_EXP = r'(#|\uff03)([0-9A-Z_]+[%s]*)' % UTF_CHARS
@@ -102,11 +104,12 @@ class ParseResult(object):
 
     '''
 
-    def __init__(self, urls, users, reply, tags, html):
+    def __init__(self, urls, users, reply, tags, emojis, html):
         self.urls = urls if urls else []
         self.users = users if users else []
         self.reply = reply if reply else None
         self.tags = tags if tags else []
+        self.emojis = emojis if emojis else []
         self.html = html
 
 
@@ -123,26 +126,29 @@ class Parser(object):
         self._urls = []
         self._users = []
         self._tags = []
+        self._emojis = []
 
         reply = REPLY_REGEX.match(text)
         reply = reply.groups(0)[0] if reply is not None else None
 
         parsed_html = self._html(text) if html else self._text(text)
         return ParseResult(self._urls, self._users, reply,
-                           self._tags, parsed_html)
+                           self._tags, self._emojis, parsed_html)
 
     def _text(self, text):
         '''Parse a caption/comment without generating HTML.'''
         URL_REGEX.sub(self._parse_urls, text)
         USERNAME_REGEX.sub(self._parse_users, text)
         HASHTAG_REGEX.sub(self._parse_tags, text)
+        EMOJI_REGEX.sub(self._parse_emojis, text)
         return None
 
     def _html(self, text):
         '''Parse a caption/comment and generate HTML.'''
         html = URL_REGEX.sub(self._parse_urls, text)
         html = USERNAME_REGEX.sub(self._parse_users, html)
-        return HASHTAG_REGEX.sub(self._parse_tags, html)
+        html = HASHTAG_REGEX.sub(self._parse_tags, html)
+        return EMOJI_REGEX.sub(self._parse_emojis, html)
 
     # Internal parser stuff ---------------------------------------------------
     def _parse_urls(self, match):
@@ -257,6 +263,15 @@ class Parser(object):
 
         if self._html:
             return '%s%s' % (pre, self.format_tag(tag, text))
+
+    def _parse_emojis(self, match):
+        '''Parse emojis.'''
+
+        mat = match.group(0)
+        self._emojis.append(mat)
+
+        if self._html:
+            return mat
 
     def _shorten_url(self, text):
         '''Shorten a URL and make sure to not cut of html entities.'''

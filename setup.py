@@ -12,7 +12,7 @@ setup(
     packages=['itp'],
     include_package_data=True,
     zip_safe=False,
-    install_requires=[],
+    install_requires=['emoji==0.3.9'],
     classifiers=[
         'Environment :: Console',
         'Intended Audience :: Developers',

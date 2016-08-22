@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='instagram-text-python',
-    version='2.0.4',
+    version='2.0.5',
     description='Instagram caption parser and formatter',
     long_description="Extract @users, #hashtags and URLs (and unwind shortened links) from instagram captions and comments including entity locations, also generate HTML for output. Visit https://github.com/takumihq/instagram-text-python for examples.",
     author='Maintained by Takumi (previously twitter-text-python, which is maintained by Edmond Burnett (previously Ian Ozsvald; originally Ivo Wetzel))',
@@ -12,7 +12,7 @@ setup(
     packages=['itp'],
     include_package_data=True,
     zip_safe=False,
-    install_requires=['emoji==0.3.9'],
+    install_requires=[],
     classifiers=[
         'Environment :: Console',
         'Intended Audience :: Developers',

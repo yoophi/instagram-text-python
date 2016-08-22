@@ -10,66 +10,23 @@
 #  You should have received a copy of the MIT License along with
 #  twitter-text-python. If not, see <http://opensource.org/licenses/MIT>.
 #
-#  Maintained by Edmond Burnett:
-#  https://github.com/edburnett/twitter-text-python
-#  (previously Ian Ozsvald and Ivo Wetzel)
+#  Maintained by Takumi:
+#  https://github.com/TakumiHQ/instagram-text-python
+#  (previously Ian Ozsvald, Ivo Wetzel and Edmond Burnett)
 
 
 # Instagram Parser and Formatter ----------------------------------------------
 # -----------------------------------------------------------------------------
 from __future__ import unicode_literals
 
-import re
-import sys
-import emoji
 try:
     from urllib.parse import quote  # Python3
 except ImportError:
     from urllib import quote
 
-__version__ = "2.0.4"
+from . import regex
 
-AT_SIGNS = r'[@\uff20]'
-UTF_CHARS = r'a-z0-9_\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff'
-SPACES = r'[\u0020\u00A0\u1680\u180E\u2002-\u202F\u205F\u2060\u3000]'
-
-
-# Users
-if sys.version_info >= (3, 0):
-    username_flags = re.ASCII | re.IGNORECASE
-else:
-    username_flags = re.IGNORECASE
-
-# The username regex will match invalid usernames that start on dots, end on
-# dots and include repeated dots. Those usernames are parsed without regex
-# in the actual parser in `Parser._parse_username()`
-USERNAME_CHARS = r'([a-z0-9_.]{1,30})(/[a-z][a-z0-9\x80-\xFF-]{0,79})?'
-
-USERNAME_REGEX = re.compile(r'\B' + AT_SIGNS + USERNAME_CHARS, username_flags)
-REPLY_REGEX = re.compile(r'^(?:' + SPACES + r')*' + AT_SIGNS
-                         + r'([a-z0-9_]{1,20}).*', re.IGNORECASE)
-EMOJI_REGEX = emoji.get_emoji_regexp()
-
-# Hashtags
-HASHTAG_EXP = r'(#|\uff03)([0-9A-Z_]+[%s]*)' % UTF_CHARS
-HASHTAG_REGEX = re.compile(HASHTAG_EXP, re.IGNORECASE)
-
-# URLs
-PRE_CHARS = r'(?:[^/"\':!=]|^|\:)'
-DOMAIN_CHARS = r'([\.-]|[^\s_\!\.\/])+\.[a-z]{2,}(?::[0-9]+)?'
-PATH_CHARS = r'(?:[\.,]?[%s!\*\'\(\);:=\+\$/%s#\[\]\-_,~@])' % (UTF_CHARS, '%')
-QUERY_CHARS = r'[a-z0-9!\*\'\(\);:&=\+\$/%#\[\]\-_\.,~]'
-
-# Valid end-of-path chracters (so /foo. does not gobble the period).
-# 1. Allow ) for Wikipedia URLs.
-# 2. Allow =&# for empty URL parameters and other URL-join artifacts
-PATH_ENDING_CHARS = r'[%s\)=#/]' % UTF_CHARS
-QUERY_ENDING_CHARS = '[a-z0-9_&=#]'
-
-URL_REGEX = re.compile('((%s)((https?://|www\\.)(%s)(\/(%s*%s)?)?(\?%s*%s)?))'
-                       % (PRE_CHARS, DOMAIN_CHARS, PATH_CHARS,
-                          PATH_ENDING_CHARS, QUERY_CHARS, QUERY_ENDING_CHARS),
-                       re.IGNORECASE)
+__version__ = "2.0.5"
 
 # Registered IANA one letter domains
 IANA_ONE_LETTER_DOMAINS = (
@@ -128,7 +85,7 @@ class Parser(object):
         self._tags = []
         self._emojis = []
 
-        reply = REPLY_REGEX.match(text)
+        reply = regex.reply_regex.match(text)
         reply = reply.groups(0)[0] if reply is not None else None
 
         parsed_html = self._html(text) if html else self._text(text)
@@ -137,18 +94,18 @@ class Parser(object):
 
     def _text(self, text):
         '''Parse a caption/comment without generating HTML.'''
-        URL_REGEX.sub(self._parse_urls, text)
-        USERNAME_REGEX.sub(self._parse_users, text)
-        HASHTAG_REGEX.sub(self._parse_tags, text)
-        EMOJI_REGEX.sub(self._parse_emojis, text)
+        regex.url_regex.sub(self._parse_urls, text)
+        regex.username_regex.sub(self._parse_users, text)
+        regex.hashtag_regex.sub(self._parse_tags, text)
+        regex.emoji_regex.sub(self._parse_emojis, text)
         return None
 
     def _html(self, text):
         '''Parse a caption/comment and generate HTML.'''
-        html = URL_REGEX.sub(self._parse_urls, text)
-        html = USERNAME_REGEX.sub(self._parse_users, html)
-        html = HASHTAG_REGEX.sub(self._parse_tags, html)
-        return EMOJI_REGEX.sub(self._parse_emojis, html)
+        html = regex.url_regex.sub(self._parse_urls, text)
+        html = regex.username_regex.sub(self._parse_users, html)
+        html = regex.hashtag_regex.sub(self._parse_tags, html)
+        return regex.emoji_regex.sub(self._parse_emojis, html)
 
     # Internal parser stuff ---------------------------------------------------
     def _parse_urls(self, match):

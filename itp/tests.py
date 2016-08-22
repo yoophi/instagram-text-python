@@ -500,17 +500,22 @@ class TWPTests(unittest.TestCase):
     def test_emoji_multiple(self):
         result = self.parser.parse(u'\U0001f408\U0001f525\U0001f4b8')
         self.assertEqual(result.html, u'\U0001f408\U0001f525\U0001f4b8')
-        self.assertEqual(result.emojis, ['\U0001f408', u'\U0001f525', u'\U0001f4b8'])
+        self.assertEqual(result.emojis, [u'\U0001f408', u'\U0001f525', u'\U0001f4b8'])
 
     def test_emoji_inside_text(self):
         result = self.parser.parse(u'I like my \U0001f408\U0001f408, and I also like \U0001f525')
         self.assertEqual(result.html, u'I like my \U0001f408\U0001f408, and I also like \U0001f525')
-        self.assertEqual(result.emojis, ['\U0001f408', u'\U0001f408', u'\U0001f525'])
+        self.assertEqual(result.emojis, [u'\U0001f408', u'\U0001f408', u'\U0001f525'])
 
     def test_emoji_repeated(self):
         result = self.parser.parse(u'\U0001f408\U0001f408\U0001f408')
         self.assertEqual(result.html, u'\U0001f408\U0001f408\U0001f408')
-        self.assertEqual(result.emojis, ['\U0001f408', u'\U0001f408', u'\U0001f408'])
+        self.assertEqual(result.emojis, [u'\U0001f408', u'\U0001f408', u'\U0001f408'])
+
+    def test_emoji_surrogate_pair(self):
+        result = self.parser.parse(u'Look at those red hearts: \u2764\ufe0f\u2764\ufe0f')
+        self.assertEqual(result.html, u'Look at those red hearts: \u2764\ufe0f\u2764\ufe0f')
+        self.assertEqual(result.emojis, [u'\u2764\ufe0f', u'\u2764\ufe0f'])
 
     # Username tests -----------------------------------------------------------
     # --------------------------------------------------------------------------

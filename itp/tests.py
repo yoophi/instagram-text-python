@@ -517,6 +517,11 @@ class TWPTests(unittest.TestCase):
         self.assertEqual(result.html, u'Look at those red hearts: \u2764\ufe0f\u2764\ufe0f')
         self.assertEqual(result.emojis, [u'\u2764\ufe0f', u'\u2764\ufe0f'])
 
+    def test_emoji_skin_tone(self):
+        result = self.parser.parse(u'See all those santas \U0001f385\U0001f3fb\U0001f385\U0001f3ff')
+        self.assertEqual(result.html, u'See all those santas \U0001f385\U0001f3fb\U0001f385\U0001f3ff')
+        self.assertEqual(result.emojis, [u'\U0001F385', u'\U0001f385'])
+
     # Username tests -----------------------------------------------------------
     # --------------------------------------------------------------------------
     def test_not_username_preceded_letter(self):

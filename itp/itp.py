@@ -18,13 +18,15 @@
 # Instagram Parser and Formatter ----------------------------------------------
 # -----------------------------------------------------------------------------
 from __future__ import unicode_literals
-import sys
 import re
+import sys
 
 try:
     from urllib.parse import quote  # Python3
 except ImportError:
     from urllib import quote
+
+__version__ = "2.0.5"
 
 # A partial regex from Instagram, from the following blog post
 # http://instagram-engineering.tumblr.com/post/118304328152/emojineering-part-2-implementing-hashtag-emoji
@@ -71,8 +73,6 @@ URL_REGEX = re.compile('((%s)((https?://|www\\.)(%s)(\/(%s*%s)?)?(\?%s*%s)?))'
                        % (PRE_CHARS, DOMAIN_CHARS, PATH_CHARS,
                           PATH_ENDING_CHARS, QUERY_CHARS, QUERY_ENDING_CHARS),
                        re.IGNORECASE)
-
-__version__ = "2.0.5"
 
 # Registered IANA one letter domains
 IANA_ONE_LETTER_DOMAINS = (

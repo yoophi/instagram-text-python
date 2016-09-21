@@ -36,7 +36,7 @@ EMOJI_REGEX = re.compile(EMOJI_EXP, re.UNICODE)
 FITZPATRICK_EMOJIS = [u'\U0001F3FB', u'\U0001F3FC', u'\U0001F3FD', u'\U0001F3FE', u'\U0001F3FF']
 
 AT_SIGNS = r'[@\uff20]'
-UTF_CHARS = r'a-z0-9_\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff'
+UTF_CHARS = r'a-z0-9_\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff\uac00-\ud7a3'
 SPACES = r'[\u0020\u00A0\u1680\u180E\u2002-\u202F\u205F\u2060\u3000]'
 
 # Users
@@ -55,7 +55,8 @@ REPLY_REGEX = re.compile(r'^(?:' + SPACES + r')*' + AT_SIGNS
                          + r'([a-z0-9_]{1,20}).*', re.IGNORECASE)
 
 # Hashtags
-HASHTAG_EXP = r'(#|\uff03)([0-9A-Z_]+[%s]*)' % UTF_CHARS
+# HASHTAG_EXP = r'(#|\uff03)([0-9A-Z_]+[%s]*)' % UTF_CHARS
+HASHTAG_EXP = r'(#|\uff03)([%s]{1,})' % UTF_CHARS
 HASHTAG_REGEX = re.compile(HASHTAG_EXP, re.IGNORECASE)
 
 # URLs
